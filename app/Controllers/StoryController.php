@@ -69,6 +69,43 @@ class StoryController
         ]);
     }
 
+    /** Permalink Blogger: /2026/07/slug.html → /storia/slug */
+    public static function legacy(array $p): void
+    {
+        $year = (string) ($p['year'] ?? '');
+        $month = (string) ($p['month'] ?? '');
+        $day = (string) ($p['day'] ?? '');
+        $filename = (string) ($p['filename'] ?? '');
+        if (!preg_match('/^\d{4}$/', $year) || !preg_match('/^\d{1,2}$/', $month)) {
+            View::notFound();
+        }
+        if ($day !== '' && !preg_match('/^\d{1,2}$/', $day)) {
+            View::notFound();
+        }
+        if (!preg_match('/\.(html|htm)$/i', $filename)) {
+            View::notFound();
+        }
+        $base = preg_replace('/\.(html|htm)$/i', '', $filename) ?? '';
+        $base = rawurldecode($base);
+        $slug = slugify($base);
+        if ($slug === '') {
+            View::notFound();
+        }
+        $story = Database::one('SELECT slug, status FROM stories WHERE slug = ?', [$slug]);
+        if (!$story) {
+            foreach (Database::all('SELECT slug, status FROM stories WHERE slug LIKE ? LIMIT 8', [$slug . '-%']) as $row) {
+                if (preg_match('/^' . preg_quote($slug, '/') . '-\d+$/', (string) $row['slug'])) {
+                    $story = $row;
+                    break;
+                }
+            }
+        }
+        if (!$story || ($story['status'] !== 'published' && !Auth::isAdmin())) {
+            View::notFound('Storia non trovata.');
+        }
+        redirect('storia/' . $story['slug'], 301);
+    }
+
     public static function vote(): void
     {
         Csrf::check();

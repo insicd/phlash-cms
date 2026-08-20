@@ -23,6 +23,8 @@ $router->get('/rss', [HomeController::class, 'rss']);
 
 $router->get('/storia/{slug}', [StoryController::class, 'show']);
 $router->post('/storia/vota', [StoryController::class, 'vote']);
+$router->get('/{year}/{month}/{filename}', [StoryController::class, 'legacy']);
+$router->get('/{year}/{month}/{day}/{filename}', [StoryController::class, 'legacy']);
 
 $router->get('/login', [AuthController::class, 'loginForm']);
 $router->post('/login', [AuthController::class, 'login']);
