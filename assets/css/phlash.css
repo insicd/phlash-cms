@@ -14,6 +14,7 @@
   --line: #d4a574;
   --link: #9a3412;
   --box: #f3e0cc;
+  --wrap: min(1760px, calc(100% - 28px));
 }
 
 * { box-sizing: border-box; }
@@ -31,7 +32,7 @@ a:hover { color: var(--accent-hot); text-decoration: underline; }
 
 #sky { background: var(--header); color: var(--cream); }
 #topbar {
-  max-width: 1100px;
+  max-width: var(--wrap);
   margin: 0 auto;
   padding: 0 10px;
   min-height: 48px;
@@ -55,7 +56,7 @@ a:hover { color: var(--accent-hot); text-decoration: underline; }
 .logo-a { color: #fff7ed; }
 .logo-b { color: #f97316; }
 .tagline {
-  max-width: 1100px;
+  max-width: var(--wrap);
   margin: 0 auto;
   padding: 0 10px 7px;
   font-size: 11px;
@@ -111,7 +112,7 @@ a:hover { color: var(--accent-hot); text-decoration: underline; }
   padding: 0 10px;
   display: flex;
   flex-wrap: wrap;
-  max-width: 1100px;
+  max-width: var(--wrap);
   margin: 0 auto;
 }
 #subnav a {
@@ -124,13 +125,13 @@ a:hover { color: var(--accent-hot); text-decoration: underline; }
 #subnav a:hover, #subnav a.on { background: #9a3412; color: #fff; }
 
 #page {
-  max-width: 1100px;
+  max-width: var(--wrap);
   margin: 0 auto;
-  padding: 14px 10px 40px;
+  padding: 14px 0 40px;
 }
-#columns { display: flex; gap: 16px; align-items: flex-start; }
+#columns { display: flex; gap: 20px; align-items: flex-start; }
 #articles { flex: 1; min-width: 0; }
-#slashboxes { width: 250px; flex-shrink: 0; }
+#slashboxes { width: 280px; flex-shrink: 0; }
 
 .admin-strip {
   background: #431407;
@@ -491,7 +492,7 @@ button.primary { padding: 7px 14px; font-size: 13px; }
 .empty { background: var(--paper); padding: 16px; border: 1px solid var(--line); }
 
 #foot {
-  max-width: 1100px;
+  max-width: var(--wrap);
   margin: 0 auto 20px;
   padding: 12px 16px;
   color: var(--muted);
@@ -602,8 +603,10 @@ button.primary { padding: 7px 14px; font-size: 13px; }
 .stats li strong { display: block; font-size: 22px; color: var(--accent-dark); }
 
 @media (max-width: 820px) {
+  :root { --wrap: calc(100% - 16px); }
   #columns { flex-direction: column; }
   #slashboxes { width: 100%; }
+  #page { padding: 12px 0 32px; }
   .logo { font-size: 26px; }
   .top-search { margin-left: 0; }
   .cmt-kids { margin-left: 8px; }
