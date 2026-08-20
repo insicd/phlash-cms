@@ -127,4 +127,14 @@ CREATE TABLE IF NOT EXISTS settings (
   v TEXT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS pageviews (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  viewed_at DATETIME NOT NULL,
+  path VARCHAR(250) NOT NULL,
+  title VARCHAR(200) NOT NULL DEFAULT '',
+  visitor CHAR(32) NOT NULL,
+  KEY idx_viewed (viewed_at),
+  KEY idx_path_viewed (path, viewed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;

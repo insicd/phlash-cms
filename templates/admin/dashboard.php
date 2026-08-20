@@ -5,7 +5,11 @@
   <li><strong><?= (int)$stats['comments'] ?></strong> commenti</li>
   <li><strong><?= (int)$stats['users'] ?></strong> utenti</li>
 </ul>
-<p><a href="<?= h(url('tools/blogger-importer/index.php')) ?>">Importa da Blogger (Takeout)</a></p>
+<p>
+  <a href="<?= h(url('admin/statistiche')) ?>">Statistiche visite</a>
+  ·
+  <a href="<?= h(url('tools/blogger-importer/index.php')) ?>">Importa da Blogger (Takeout)</a>
+</p>
 <h2 class="page-h2">Coda in arrivo</h2>
 <?php if (!$pending): ?>
   <p class="muted">Niente in attesa.</p>

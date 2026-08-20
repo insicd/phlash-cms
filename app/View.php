@@ -26,6 +26,11 @@ class View
             $data['pending_count'] = $data['pending_count'] ?? (int) Database::one(
                 "SELECT COUNT(*) c FROM stories WHERE status='pending'"
             )['c'];
+            try {
+                Stats::hit($template, $data);
+            } catch (\Throwable $e) {
+                // le stats non devono mai rompere la pagina
+            }
         }
         extract($data, EXTR_SKIP);
         $content = self::capture($template, $data);

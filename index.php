@@ -41,6 +41,7 @@ $router->get('/utente/{username}', [UserController::class, 'profile']);
 $router->post('/sondaggio', [PollController::class, 'vote']);
 
 $router->get('/admin', [AdminController::class, 'dashboard']);
+$router->get('/admin/statistiche', [AdminController::class, 'stats']);
 $router->get('/admin/storie', [AdminController::class, 'stories']);
 $router->post('/admin/storie', [AdminController::class, 'storyAction']);
 $router->get('/admin/commenti', [AdminController::class, 'comments']);

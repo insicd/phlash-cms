@@ -65,6 +65,7 @@ if (($mode ?? '') === 'home') {
   <?php if (!empty($admin_nav)): ?>
     <div class="admin-strip">
       <a href="<?= h(url('admin')) ?>">Pannello</a>
+      <a href="<?= h(url('admin/statistiche')) ?>">Statistiche</a>
       <a href="<?= h(url('admin/storie')) ?>">Storie</a>
       <a href="<?= h(url('admin/commenti')) ?>">Commenti</a>
       <a href="<?= h(url('admin/utenti')) ?>">Utenti</a>

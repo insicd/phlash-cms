@@ -289,4 +289,76 @@ class AdminController
         flash('ok', 'Nuovo sondaggio attivato.');
         redirect('admin/sondaggio');
     }
+
+    public static function stats(): void
+    {
+        Auth::requireAdmin();
+        $range = self::statsRange();
+        $report = \Phlash\Stats::report($range['from'], $range['to']);
+        View::render('admin/stats', [
+            'title' => 'Statistiche — Admin',
+            'admin_nav' => true,
+            'range' => $range,
+            'report' => $report,
+        ]);
+    }
+
+    private static function statsRange(): array
+    {
+        $period = (string) ($_GET['periodo'] ?? '30g');
+        $da = trim((string) ($_GET['da'] ?? ''));
+        $a = trim((string) ($_GET['a'] ?? ''));
+        $today = strtotime('today') ?: time();
+        $tomorrow = $today + 86400;
+        $mesi = [1=>'gennaio',2=>'febbraio',3=>'marzo',4=>'aprile',5=>'maggio',6=>'giugno',
+            7=>'luglio',8=>'agosto',9=>'settembre',10=>'ottobre',11=>'novembre',12=>'dicembre'];
+        $labelDay = static function (int $ts) use ($mesi): string {
+            return date('j', $ts) . ' ' . $mesi[(int) date('n', $ts)] . ' ' . date('Y', $ts);
+        };
+
+        if ($da !== '' && $a !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $da) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $a)) {
+            $fromTs = strtotime($da . ' 00:00:00');
+            $toTs = strtotime($a . ' 00:00:00');
+            if ($fromTs && $toTs) {
+                if ($fromTs > $toTs) {
+                    $tmp = $fromTs;
+                    $fromTs = $toTs;
+                    $toTs = $tmp;
+                    $tmp = $da;
+                    $da = $a;
+                    $a = $tmp;
+                }
+                $toTs += 86400;
+                return [
+                    'period' => 'custom',
+                    'from' => date('Y-m-d H:i:s', $fromTs),
+                    'to' => date('Y-m-d H:i:s', $toTs),
+                    'da' => $da,
+                    'a' => $a,
+                    'label' => $labelDay($fromTs) . ' – ' . $labelDay($toTs - 86400),
+                ];
+            }
+        }
+
+        $presets = [
+            'oggi' => [$today, $tomorrow, 'Oggi'],
+            '7g' => [$today - 6 * 86400, $tomorrow, 'Ultimi 7 giorni'],
+            '30g' => [$today - 29 * 86400, $tomorrow, 'Ultimi 30 giorni'],
+            '90g' => [$today - 89 * 86400, $tomorrow, 'Ultimi 90 giorni'],
+            'tutto' => [strtotime('2000-01-01') ?: $today, $tomorrow, 'Tutto il periodo'],
+        ];
+        if (!isset($presets[$period])) {
+            $period = '30g';
+        }
+        [$fromTs, $toTs, $name] = $presets[$period];
+        $label = $period === 'tutto' ? $name : $name . ' (' . $labelDay($fromTs) . ' – ' . $labelDay($toTs - 86400) . ')';
+        return [
+            'period' => $period,
+            'from' => date('Y-m-d H:i:s', $fromTs),
+            'to' => date('Y-m-d H:i:s', $toTs),
+            'da' => date('Y-m-d', $fromTs),
+            'a' => date('Y-m-d', $toTs - 86400),
+            'label' => $label,
+        ];
+    }
 }

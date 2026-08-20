@@ -36,7 +36,7 @@ Poi apri `http://localhost:8080/install.php`. Serve un MySQL in ascolto (MAMP, D
 - **Markdown** ristretto per le storie (niente HTML libero)
 - **Commenti** in testo, anche anonimi, con captcha aritmetico se non sei loggato
 - **Invio storie** solo utenti registrati; coda *In arrivo* + soglia di promozione (default 5 voti)
-- **Admin** in `/admin`: storie, commenti, utenti, sezioni, sondaggio, impostazioni
+- **Admin** in `/admin`: storie, commenti, utenti, sezioni, sondaggio, statistiche visite (first-party, senza servizi esterni), impostazioni
 
 Chi è loggato può comunque spuntare «Pubblica come Codardo Anonimo».
 
