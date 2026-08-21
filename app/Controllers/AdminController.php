@@ -125,7 +125,11 @@ class AdminController
     public static function users(): void
     {
         Auth::requireAdmin();
-        $rows = Database::all('SELECT id, username, email, role, karma, status, created_at, last_login FROM users ORDER BY id DESC LIMIT 200');
+        $rows = Database::all(
+            'SELECT id, username, email, role, karma, status, created_at, last_login,
+                    (api_token_hash IS NOT NULL) AS has_api
+             FROM users ORDER BY id DESC LIMIT 200'
+        );
         View::render('admin/users', [
             'title' => 'Utenti — Admin',
             'rows' => $rows,
@@ -139,6 +143,21 @@ class AdminController
         $admin = Auth::requireAdmin();
         $id = (int) ($_POST['id'] ?? 0);
         $act = $_POST['act'] ?? '';
+        if ($act === 'api_token') {
+            $target = Database::one('SELECT username FROM users WHERE id = ?', [$id]);
+            if (!$target) {
+                flash('err', 'Utente non trovato.');
+                redirect('admin/utenti');
+            }
+            $plain = Auth::issueApiToken($id);
+            flash('ok', 'Token API di ' . $target['username'] . ': ' . $plain . ' — copialo ora, non verrà più mostrato.');
+            redirect('admin/utenti');
+        }
+        if ($act === 'api_revoke') {
+            Auth::revokeApiToken($id);
+            flash('ok', 'Token API revocato.');
+            redirect('admin/utenti');
+        }
         if ($id === (int) $admin['id']) {
             flash('err', 'Non puoi modificare il tuo stesso ruolo/stato da qui.');
             redirect('admin/utenti');

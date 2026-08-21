@@ -15,8 +15,10 @@ CREATE TABLE IF NOT EXISTS users (
   status ENUM('active','banned') NOT NULL DEFAULT 'active',
   created_at DATETIME NOT NULL,
   last_login DATETIME NULL,
+  api_token_hash CHAR(64) NULL DEFAULT NULL,
   UNIQUE KEY uq_username (username),
-  UNIQUE KEY uq_email (email)
+  UNIQUE KEY uq_email (email),
+  UNIQUE KEY uq_api_token (api_token_hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS topics (

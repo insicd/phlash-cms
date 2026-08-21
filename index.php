@@ -5,6 +5,7 @@ require __DIR__ . '/app/bootstrap.php';
 use Phlash\Csrf;
 use Phlash\Router;
 use Phlash\Controllers\AdminController;
+use Phlash\Controllers\ApiController;
 use Phlash\Controllers\AuthController;
 use Phlash\Controllers\CommentController;
 use Phlash\Controllers\HomeController;
@@ -20,6 +21,12 @@ $router->get('/upcoming', [HomeController::class, 'upcoming']);
 $router->get('/sezione/{slug}', [HomeController::class, 'topic']);
 $router->get('/cerca', [HomeController::class, 'search']);
 $router->get('/rss', [HomeController::class, 'rss']);
+
+$router->get('/api/v1', [ApiController::class, 'index']);
+$router->get('/api/v1/me', [ApiController::class, 'me']);
+$router->get('/api/v1/topics', [ApiController::class, 'topics']);
+$router->post('/api/v1/stories', [ApiController::class, 'createStory']);
+$router->get('/api/v1/stories/{id}', [ApiController::class, 'showStory']);
 
 $router->get('/storia/{slug}', [StoryController::class, 'show']);
 $router->post('/storia/vota', [StoryController::class, 'vote']);
@@ -39,6 +46,7 @@ $router->post('/commento', [CommentController::class, 'store']);
 $router->post('/commento/vota', [CommentController::class, 'vote']);
 
 $router->get('/utente/{username}', [UserController::class, 'profile']);
+$router->post('/utente/api-token', [UserController::class, 'apiToken']);
 
 $router->post('/sondaggio', [PollController::class, 'vote']);
 
@@ -59,8 +67,9 @@ $router->get('/admin/sondaggio', [AdminController::class, 'poll']);
 $router->post('/admin/sondaggio', [AdminController::class, 'pollSave']);
 
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-if ($method === 'POST') {
+$path = phlash_path();
+if ($method === 'POST' && strpos($path, '/api/') !== 0) {
     Csrf::check();
 }
 
-$router->dispatch($method, phlash_path());
+$router->dispatch($method, $path);

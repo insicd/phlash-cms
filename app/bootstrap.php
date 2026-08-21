@@ -61,6 +61,16 @@ if ($installed) {
             Database::query('UPDATE topics SET icon = ? WHERE slug = ? AND icon = \'\'', [$icon, $slug]);
         }
     }
+    try {
+        Database::pdo()->query('SELECT api_token_hash FROM users LIMIT 1');
+    } catch (Throwable $e) {
+        Database::pdo()->exec('ALTER TABLE users ADD COLUMN api_token_hash CHAR(64) NULL DEFAULT NULL');
+        try {
+            Database::pdo()->exec('ALTER TABLE users ADD UNIQUE KEY uq_api_token (api_token_hash)');
+        } catch (Throwable $e2) {
+            // indice già presente
+        }
+    }
 }
 
 function phlash_path(): string

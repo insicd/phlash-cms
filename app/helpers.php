@@ -268,6 +268,22 @@ function bump_karma(int $userId, int $delta): void
     \Phlash\Database::query('UPDATE users SET karma = karma + ? WHERE id = ?', [$delta, $userId]);
 }
 
+function request_header(string $name): string
+{
+    $serverKey = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+    if (!empty($_SERVER[$serverKey]) && is_string($_SERVER[$serverKey])) {
+        return $_SERVER[$serverKey];
+    }
+    if (strcasecmp($name, 'Authorization') === 0) {
+        foreach (['REDIRECT_HTTP_AUTHORIZATION', 'HTTP_AUTHORIZATION'] as $k) {
+            if (!empty($_SERVER[$k]) && is_string($_SERVER[$k])) {
+                return $_SERVER[$k];
+            }
+        }
+    }
+    return '';
+}
+
 function render_comment_node(array $c, array $ctx): void
 {
     $user = $ctx['user'] ?? null;

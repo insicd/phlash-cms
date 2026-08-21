@@ -39,6 +39,66 @@ class Auth
         return $u && $u['role'] === 'admin';
     }
 
+    public static function apiUser(): ?array
+    {
+        static $cached = false;
+        static $user = null;
+        if ($cached) {
+            return $user;
+        }
+        $cached = true;
+        $token = self::bearerToken();
+        if ($token === '') {
+            return null;
+        }
+        $user = Database::one(
+            'SELECT * FROM users WHERE api_token_hash = ? AND status = ?',
+            [self::hashApiToken($token), 'active']
+        );
+        return $user;
+    }
+
+    public static function requireApiUser(): array
+    {
+        $u = self::apiUser();
+        if (!$u) {
+            http_response_code(401);
+            header('Content-Type: application/json; charset=utf-8');
+            header('WWW-Authenticate: Bearer realm="Phlash"');
+            echo json_encode(['ok' => false, 'error' => 'Token API mancante o non valido.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        return $u;
+    }
+
+    public static function issueApiToken(int $userId): string
+    {
+        $token = 'phl_' . bin2hex(random_bytes(24));
+        Database::query('UPDATE users SET api_token_hash = ? WHERE id = ?', [self::hashApiToken($token), $userId]);
+        return $token;
+    }
+
+    public static function revokeApiToken(int $userId): void
+    {
+        Database::query('UPDATE users SET api_token_hash = NULL WHERE id = ?', [$userId]);
+    }
+
+    public static function hashApiToken(string $token): string
+    {
+        $pepper = Database::setting('ip_salt', 'phlash');
+        return hash('sha256', $pepper . '|' . $token);
+    }
+
+    private static function bearerToken(): string
+    {
+        $auth = request_header('Authorization');
+        if (preg_match('/^Bearer\s+(\S+)/i', $auth, $m)) {
+            return $m[1];
+        }
+        $alt = trim(request_header('X-Phlash-Token'));
+        return $alt;
+    }
+
     public static function login(array $user): void
     {
         session_regenerate_id(true);
