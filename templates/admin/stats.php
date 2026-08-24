@@ -66,27 +66,39 @@ $pageLabel = static function (array $row): string {
 <?php else: ?>
   <?php
     $sparkLast = count($report['series']) - 1;
-    $sparkTip0 = '';
-    if ($sparkLast >= 0) {
-      $lastRow = $report['series'][$sparkLast];
-      $sparkTip0 = $lastRow['bucket'] . ': ' . $fmt($lastRow['views']) . ' viste, ' . $fmt($lastRow['uniques']) . ' unici';
-    }
   ?>
-  <p class="tiny muted">Tocca una barra per i dettagli di quel giorno. In evidenza: ultimo giorno del periodo.</p>
-  <div class="spark" id="spark-chart" role="group" aria-label="Andamento delle pagine viste">
+  <p class="tiny muted">Tocca una barra per i dettagli di quel giorno.</p>
+  <style>
+    .spark-ui > .spark-tip { display: none; }
+    <?php foreach ($report['series'] as $i => $row): ?>
+    #sd<?= (int)$i ?>:checked ~ .spark label[for="sd<?= (int)$i ?>"] { background: #fdba74; }
+    #sd<?= (int)$i ?>:checked ~ .spark label[for="sd<?= (int)$i ?>"] .spark-fill { background: var(--accent-hot); }
+    #sd<?= (int)$i ?>:checked ~ #st<?= (int)$i ?> { display: block; }
+    <?php endforeach; ?>
+  </style>
+  <div class="spark-ui">
+    <?php foreach ($report['series'] as $i => $row): ?>
+      <input class="spark-input" type="radio" name="spark-day" id="sd<?= (int)$i ?>" <?= ((int)$i === $sparkLast) ? 'checked' : '' ?>>
+    <?php endforeach; ?>
+    <div class="spark" id="spark-chart" role="group" aria-label="Andamento delle pagine viste">
+      <?php foreach ($report['series'] as $i => $row): ?>
+        <?php
+          $viewsN = (int) $row['views'];
+          $hgt = $viewsN <= 0 ? 2 : max(4, (int) round(($viewsN / $maxBar) * 72));
+          $tip = $row['bucket'] . ': ' . $fmt($viewsN) . ' viste, ' . $fmt($row['uniques']) . ' unici';
+        ?>
+        <label class="spark-bar" for="sd<?= (int)$i ?>" title="<?= h($tip) ?>">
+          <span class="spark-fill" style="height: <?= $hgt ?>px"></span>
+        </label>
+      <?php endforeach; ?>
+    </div>
     <?php foreach ($report['series'] as $i => $row): ?>
       <?php
-        $viewsN = (int) $row['views'];
-        $hgt = $viewsN <= 0 ? 2 : max(4, (int) round(($viewsN / $maxBar) * 72));
-        $tip = $row['bucket'] . ': ' . $fmt($viewsN) . ' viste, ' . $fmt($row['uniques']) . ' unici';
-        $on = ((int) $i === $sparkLast);
+        $tip = $row['bucket'] . ': ' . $fmt($row['views']) . ' viste, ' . $fmt($row['uniques']) . ' unici';
       ?>
-      <button type="button" class="spark-bar<?= $on ? ' is-on' : '' ?>" data-tip="<?= h($tip) ?>" title="<?= h($tip) ?>" aria-label="<?= h($tip) ?>" aria-pressed="<?= $on ? 'true' : 'false' ?>">
-        <span class="spark-fill" style="height: <?= $hgt ?>px"></span>
-      </button>
+      <p class="spark-tip" id="st<?= (int)$i ?>"><?= h($tip) ?></p>
     <?php endforeach; ?>
   </div>
-  <p class="spark-tip" id="spark-tip"><?= h($sparkTip0) ?></p>
 <?php endif; ?>
 
 <h2 class="page-h2">Pagine più viste</h2>

@@ -33,11 +33,6 @@
       if (ta) {
         mdApply(ta, mdBtn.getAttribute('data-md'));
       }
-      return;
-    }
-    var sparkBar = e.target.closest('.spark-bar');
-    if (sparkBar) {
-      showSparkTip(sparkBar);
     }
   });
 
@@ -156,41 +151,6 @@
     ta.value = ta.value.slice(0, from) + text + ta.value.slice(to);
     ta.setSelectionRange(selStart, selEnd);
     ta.focus();
-  }
-
-  function showSparkTip(bar) {
-    var chart = document.getElementById('spark-chart');
-    var tip = document.getElementById('spark-tip');
-    if (!bar || !tip) {
-      return;
-    }
-    if (chart) {
-      var bars = chart.querySelectorAll('.spark-bar');
-      for (var i = 0; i < bars.length; i++) {
-        bars[i].classList.remove('is-on');
-        bars[i].setAttribute('aria-pressed', 'false');
-      }
-    }
-    bar.classList.add('is-on');
-    bar.setAttribute('aria-pressed', 'true');
-    tip.textContent = bar.getAttribute('data-tip') || bar.getAttribute('title') || '';
-    tip.removeAttribute('hidden');
-  }
-
-  var sparkChart = document.getElementById('spark-chart');
-  if (sparkChart) {
-    sparkChart.addEventListener('mouseover', function (e) {
-      var bar = e.target.closest('.spark-bar');
-      if (bar) {
-        showSparkTip(bar);
-      }
-    });
-    sparkChart.addEventListener('focusin', function (e) {
-      var bar = e.target.closest('.spark-bar');
-      if (bar) {
-        showSparkTip(bar);
-      }
-    });
   }
 
   var picker = document.getElementById('icon-picker');
