@@ -64,15 +64,19 @@ $pageLabel = static function (array $row): string {
 <?php if (!$report['series']): ?>
   <p class="muted">Nessuna visita in questo periodo. Naviga il sito (non da admin) per iniziare a raccogliere dati.</p>
 <?php else: ?>
-  <div class="spark" role="img" aria-label="Andamento delle pagine viste">
+  <p class="tiny muted">Tocca o clicca una barra per vederne i numeri.</p>
+  <div class="spark" id="spark-chart" role="group" aria-label="Andamento delle pagine viste">
     <?php foreach ($report['series'] as $row): ?>
       <?php
         $hgt = max(2, (int) round(((int) $row['views'] / $maxBar) * 100));
         $tip = $row['bucket'] . ': ' . $fmt($row['views']) . ' viste, ' . $fmt($row['uniques']) . ' unici';
       ?>
-      <span title="<?= h($tip) ?>"><i style="height: <?= $hgt ?>%"></i></span>
+      <button type="button" class="spark-bar" data-tip="<?= h($tip) ?>" aria-label="<?= h($tip) ?>">
+        <i style="height: <?= $hgt ?>%"></i>
+      </button>
     <?php endforeach; ?>
   </div>
+  <p class="spark-tip" id="spark-tip" hidden></p>
 <?php endif; ?>
 
 <h2 class="page-h2">Pagine più viste</h2>

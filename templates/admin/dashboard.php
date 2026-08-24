@@ -22,6 +22,7 @@
         <td><?= h($s['username']) ?></td>
         <td><?= (int)$s['score'] ?></td>
         <td>
+          <a href="<?= h(url('invia?id=' . (int)$s['id'])) ?>">modifica</a>
           <form method="post" action="<?= h(url('admin/storie')) ?>" class="inline">
             <?= \Phlash\Csrf::field() ?>
             <input type="hidden" name="id" value="<?= (int)$s['id'] ?>">

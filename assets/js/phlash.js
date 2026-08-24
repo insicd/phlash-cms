@@ -153,6 +153,29 @@
     ta.focus();
   }
 
+  var spark = document.getElementById('spark-chart');
+  var sparkTip = document.getElementById('spark-tip');
+  if (spark && sparkTip) {
+    spark.addEventListener('click', function (e) {
+      var bar = e.target.closest('.spark-bar');
+      if (!bar || !spark.contains(bar)) {
+        return;
+      }
+      var on = bar.classList.contains('is-on');
+      spark.querySelectorAll('.spark-bar.is-on').forEach(function (el) {
+        el.classList.remove('is-on');
+      });
+      if (on) {
+        sparkTip.hidden = true;
+        sparkTip.textContent = '';
+        return;
+      }
+      bar.classList.add('is-on');
+      sparkTip.hidden = false;
+      sparkTip.textContent = bar.getAttribute('data-tip') || '';
+    });
+  }
+
   var picker = document.getElementById('icon-picker');
   if (picker) {
     var pickerTarget = null;
