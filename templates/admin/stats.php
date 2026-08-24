@@ -68,11 +68,12 @@ $pageLabel = static function (array $row): string {
   <div class="spark" id="spark-chart" role="group" aria-label="Andamento delle pagine viste">
     <?php foreach ($report['series'] as $row): ?>
       <?php
-        $hgt = max(2, (int) round(((int) $row['views'] / $maxBar) * 100));
-        $tip = $row['bucket'] . ': ' . $fmt($row['views']) . ' viste, ' . $fmt($row['uniques']) . ' unici';
+        $viewsN = (int) $row['views'];
+        $hgt = $viewsN <= 0 ? 2 : max(4, (int) round(($viewsN / $maxBar) * 72));
+        $tip = $row['bucket'] . ': ' . $fmt($viewsN) . ' viste, ' . $fmt($row['uniques']) . ' unici';
       ?>
       <button type="button" class="spark-bar" data-tip="<?= h($tip) ?>" aria-label="<?= h($tip) ?>">
-        <i style="height: <?= $hgt ?>%"></i>
+        <i style="height: <?= $hgt ?>px"></i>
       </button>
     <?php endforeach; ?>
   </div>

@@ -585,19 +585,21 @@ button.primary { padding: 7px 14px; font-size: 13px; }
 .period-custom input[type=date] { display: block; margin-top: 2px; }
 .spark {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 2px;
   height: 80px;
-  padding: 4px 0 0;
+  padding: 0;
   border-bottom: 1px solid var(--line);
   margin: 0 0 8px;
 }
 .spark-bar {
-  flex: 1;
-  min-width: 8px;
-  height: 100%;
+  flex: 1 1 0;
+  min-width: 6px;
+  height: 80px;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
   background: #f4e6d4;
   border: 0;
   padding: 0;
@@ -605,16 +607,19 @@ button.primary { padding: 7px 14px; font-size: 13px; }
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
+  font-size: 0;
+  line-height: 0;
+  box-sizing: border-box;
 }
 .spark-bar:hover { background: #e8c4a0; }
 .spark-bar.is-on { background: #fdba74; }
-.spark i,
 .spark-bar i {
   display: block;
   width: 100%;
   background: var(--accent);
-  min-height: 1px;
+  min-height: 2px;
   pointer-events: none;
+  flex: none;
 }
 .spark-bar.is-on i { background: var(--accent-hot); }
 .spark-tip {
