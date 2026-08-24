@@ -9,10 +9,19 @@ $presets = [
 $fmt = static function ($n): string {
     return number_format((int) $n, 0, ',', '.');
 };
-$maxBar = 1;
-foreach ($report['series'] as $row) {
-    $maxBar = max($maxBar, (int) $row['views']);
-}
+$mesi = [1=>'gen',2=>'feb',3=>'mar',4=>'apr',5=>'mag',6=>'giu',7=>'lug',8=>'ago',9=>'set',10=>'ott',11=>'nov',12=>'dic'];
+$grain = (string) ($report['series_grain'] ?? 'day');
+$labelBucket = static function (string $bucket) use ($grain, $mesi): string {
+    $ts = strtotime($bucket) ?: time();
+    $m = $mesi[(int) date('n', $ts)];
+    if ($grain === 'hour') {
+        return date('j', $ts) . ' ' . $m . ' ' . date('H:i', $ts);
+    }
+    if ($grain === 'month') {
+        return $m . ' ' . date('Y', $ts);
+    }
+    return date('j', $ts) . ' ' . $m;
+};
 $pageLabel = static function (array $row): string {
     $path = (string) $row['path'];
     $title = trim((string) ($row['title'] ?? ''));
@@ -29,12 +38,55 @@ $pageLabel = static function (array $row): string {
     }
     return $title !== '' ? $title : $path;
 };
+$trendLabels = [];
+$trendViews = [];
+$trendUniques = [];
+foreach ($report['series'] as $row) {
+    $trendLabels[] = $labelBucket((string) $row['bucket']);
+    $trendViews[] = (int) $row['views'];
+    $trendUniques[] = (int) $row['uniques'];
+}
+$topSlice = array_slice($report['top'], 0, 10);
+$barLabels = [];
+$barViews = [];
+foreach ($topSlice as $row) {
+    $barLabels[] = $pageLabel($row);
+    $barViews[] = (int) $row['views'];
+}
+$shareSlice = array_slice($report['top'], 0, 8);
+$shareLabels = [];
+$shareViews = [];
+$shareRest = 0;
+foreach ($report['top'] as $i => $row) {
+    if ($i < 8) {
+        $shareLabels[] = $pageLabel($row);
+        $shareViews[] = (int) $row['views'];
+    } else {
+        $shareRest += (int) $row['views'];
+    }
+}
+if ($shareRest > 0) {
+    $shareLabels[] = 'Altre';
+    $shareViews[] = $shareRest;
+}
+$trendTitle = $grain === 'hour' ? 'Andamento orario' : ($grain === 'month' ? 'Andamento mensile' : 'Andamento giornaliero');
+$charts = [
+    'trendTitle' => $trendTitle,
+    'labels' => $trendLabels,
+    'views' => $trendViews,
+    'uniques' => $trendUniques,
+    'barLabels' => $barLabels,
+    'barViews' => $barViews,
+    'shareLabels' => $shareLabels,
+    'shareViews' => $shareViews,
+];
 ?>
 <h1 class="page-h">Statistiche</h1>
 <p class="page-intro">
   Visite raccolte sul sito, senza servizi esterni. Sono esclusi bot, prefetch e le sessioni admin.
   I dati partono da quando il tracciamento è attivo<?php if (!empty($report['since'])): ?>
     (<?= h(italian_datetime($report['since'])) ?>)<?php endif; ?>.
+  Grafici con Chart.js in locale: passa il mouse o tocca un punto per i numeri.
 </p>
 
 <nav class="period-nav">
@@ -60,48 +112,33 @@ $pageLabel = static function (array $row): string {
   <li><strong><?= h((string) $report['pages_per_visit']) ?></strong> pagine per visitatore</li>
 </ul>
 
-<h2 class="page-h2"><?= $report['series_grain'] === 'month' ? 'Andamento mensile' : 'Andamento giornaliero' ?></h2>
 <?php if (!$report['series']): ?>
   <p class="muted">Nessuna visita in questo periodo. Naviga il sito (non da admin) per iniziare a raccogliere dati.</p>
 <?php else: ?>
-  <?php
-    $sparkLast = count($report['series']) - 1;
-  ?>
-  <p class="tiny muted">Tocca una barra per i dettagli di quel giorno.</p>
-  <style>
-    .spark-ui > .spark-tip { display: none; }
-    <?php foreach ($report['series'] as $i => $row): ?>
-    #sd<?= (int)$i ?>:checked ~ .spark label[for="sd<?= (int)$i ?>"] { background: #fdba74; }
-    #sd<?= (int)$i ?>:checked ~ .spark label[for="sd<?= (int)$i ?>"] .spark-fill { background: var(--accent-hot); }
-    #sd<?= (int)$i ?>:checked ~ #st<?= (int)$i ?> { display: block; }
-    <?php endforeach; ?>
-  </style>
-  <div class="spark-ui">
-    <?php foreach ($report['series'] as $i => $row): ?>
-      <input class="spark-input" type="radio" name="spark-day" id="sd<?= (int)$i ?>" <?= ((int)$i === $sparkLast) ? 'checked' : '' ?>>
-    <?php endforeach; ?>
-    <div class="spark" id="spark-chart" role="group" aria-label="Andamento delle pagine viste">
-      <?php foreach ($report['series'] as $i => $row): ?>
-        <?php
-          $viewsN = (int) $row['views'];
-          $hgt = $viewsN <= 0 ? 2 : max(4, (int) round(($viewsN / $maxBar) * 72));
-          $tip = $row['bucket'] . ': ' . $fmt($viewsN) . ' viste, ' . $fmt($row['uniques']) . ' unici';
-        ?>
-        <label class="spark-bar" for="sd<?= (int)$i ?>" title="<?= h($tip) ?>">
-          <span class="spark-fill" style="height: <?= $hgt ?>px"></span>
-        </label>
-      <?php endforeach; ?>
+  <script type="application/json" id="stats-charts-data"><?= json_encode($charts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
+
+  <h2 class="page-h2"><?= h($trendTitle) ?></h2>
+  <div class="chart-card">
+    <canvas id="chart-trend" aria-label="<?= h($trendTitle) ?>"></canvas>
+  </div>
+
+  <div class="chart-grid">
+    <div>
+      <h2 class="page-h2">Pagine più viste</h2>
+      <div class="chart-card chart-card-bar">
+        <canvas id="chart-top" aria-label="Pagine più viste"></canvas>
+      </div>
     </div>
-    <?php foreach ($report['series'] as $i => $row): ?>
-      <?php
-        $tip = $row['bucket'] . ': ' . $fmt($row['views']) . ' viste, ' . $fmt($row['uniques']) . ' unici';
-      ?>
-      <p class="spark-tip" id="st<?= (int)$i ?>"><?= h($tip) ?></p>
-    <?php endforeach; ?>
+    <div>
+      <h2 class="page-h2">Quota sul traffico</h2>
+      <div class="chart-card chart-card-pie">
+        <canvas id="chart-share" aria-label="Quota sul traffico"></canvas>
+      </div>
+    </div>
   </div>
 <?php endif; ?>
 
-<h2 class="page-h2">Pagine più viste</h2>
+<h2 class="page-h2">Dettaglio pagine</h2>
 <?php if (!$report['top']): ?>
   <p class="muted">Niente da mostrare.</p>
 <?php else: ?>

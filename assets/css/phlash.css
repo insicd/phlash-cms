@@ -583,60 +583,22 @@ button.primary { padding: 7px 14px; font-size: 13px; }
 }
 .period-custom label { font-size: 11px; color: var(--muted); }
 .period-custom input[type=date] { display: block; margin-top: 2px; }
-.spark-ui { position: relative; margin: 0 0 16px; }
-.spark-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-  padding: 0;
-  margin: -1px;
-}
-.spark {
-  display: flex;
-  align-items: stretch;
-  gap: 2px;
-  height: 80px;
-  padding: 0;
-  border-bottom: 1px solid var(--line);
-  margin: 0 0 8px;
-}
-.spark-bar {
-  flex: 1 1 0;
-  min-width: 6px;
-  height: 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: stretch;
-  background: #f4e6d4;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-.spark-bar:hover { background: #e8c4a0; }
-.spark-fill {
-  display: block;
-  width: 100%;
-  background: var(--accent);
-  min-height: 2px;
-  pointer-events: none;
-  flex: none;
-}
-.spark-tip {
-  font-size: 13px;
-  background: #ffedd5;
+.chart-card {
+  background: var(--paper);
   border: 1px solid var(--line);
-  padding: 8px 10px;
-  margin: 0;
-  min-height: 1.3em;
+  padding: 12px 12px 8px;
+  margin: 0 0 18px;
+  height: 280px;
 }
+.chart-card-bar { height: 320px; }
+.chart-card-pie { height: 320px; }
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.chart-grid .page-h2 { margin-top: 0; }
 .grid td.num, .grid th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .stats li strong { display: block; font-size: 22px; color: var(--accent-dark); }
 
@@ -649,4 +611,6 @@ button.primary { padding: 7px 14px; font-size: 13px; }
   .top-search { margin-left: 0; }
   .cmt-kids { margin-left: 8px; }
   .story-head, .story-meta { padding-right: 58px; }
+  .chart-grid { grid-template-columns: 1fr; }
+  .chart-card, .chart-card-bar, .chart-card-pie { height: 260px; }
 }

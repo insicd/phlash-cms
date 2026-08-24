@@ -93,5 +93,9 @@ if (($mode ?? '') === 'home') {
   <p><strong><?= h($settings['site_name']) ?></strong> — Powered by <a href="https://github.com/insicd/phlash-cms" target="_blank"class="soft-ver"><?= h(PHLASH_NAME) ?> <?= h(PHLASH_VERSION) ?></a> a PHP+MySQL CMS, based on Slashdot and Pligg.</p>
 </footer>
 <script src="<?= h(asset('js/phlash.js')) ?>"></script>
+<?php if (!empty($use_chartjs)): ?>
+<script src="<?= h(asset('vendor/chartjs/chart.umd.min.js')) ?>"></script>
+<script src="<?= h(asset('js/stats-charts.js')) ?>"></script>
+<?php endif; ?>
 </body>
 </html>

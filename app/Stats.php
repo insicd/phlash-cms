@@ -55,8 +55,17 @@ class Stats
         $views = (int) ($viewsRow['n'] ?? 0);
         $uniques = (int) ($uniqRow['n'] ?? 0);
         $first = Database::one('SELECT MIN(viewed_at) AS d FROM pageviews');
-        $grain = (strtotime($to) - strtotime($from)) > 92 * 86400 ? 'month' : 'day';
-        if ($grain === 'month') {
+        $span = (strtotime($to) ?: time()) - (strtotime($from) ?: time());
+        if ($span <= 2 * 86400) {
+            $grain = 'hour';
+            $series = Database::all(
+                "SELECT DATE_FORMAT(viewed_at, '%Y-%m-%d %H:00:00') AS bucket, COUNT(*) AS views, COUNT(DISTINCT visitor) AS uniques
+                 FROM pageviews WHERE viewed_at >= ? AND viewed_at < ?
+                 GROUP BY DATE_FORMAT(viewed_at, '%Y-%m-%d %H:00:00') ORDER BY bucket",
+                [$from, $to]
+            );
+        } elseif ($span > 92 * 86400) {
+            $grain = 'month';
             $series = Database::all(
                 "SELECT DATE_FORMAT(viewed_at, '%Y-%m-01') AS bucket, COUNT(*) AS views, COUNT(DISTINCT visitor) AS uniques
                  FROM pageviews WHERE viewed_at >= ? AND viewed_at < ?
@@ -64,6 +73,7 @@ class Stats
                 [$from, $to]
             );
         } else {
+            $grain = 'day';
             $series = Database::all(
                 "SELECT DATE(viewed_at) AS bucket, COUNT(*) AS views, COUNT(DISTINCT visitor) AS uniques
                  FROM pageviews WHERE viewed_at >= ? AND viewed_at < ?
@@ -113,6 +123,16 @@ class Stats
                 $key = date('Y-m-01', $cursor);
                 $out[] = $by[$key] ?? ['bucket' => $key, 'views' => 0, 'uniques' => 0];
                 $cursor = strtotime('+1 month', $cursor) ?: ($cursor + 32 * 86400);
+            }
+            return $out;
+        }
+        if ($grain === 'hour') {
+            $cursor = strtotime(date('Y-m-d H:00:00', strtotime($from) ?: $start)) ?: $start;
+            $limit = strtotime(date('Y-m-d H:00:00', $last)) ?: $last;
+            while ($cursor <= $limit) {
+                $key = date('Y-m-d H:00:00', $cursor);
+                $out[] = $by[$key] ?? ['bucket' => $key, 'views' => 0, 'uniques' => 0];
+                $cursor += 3600;
             }
             return $out;
         }

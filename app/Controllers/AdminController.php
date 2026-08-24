@@ -319,6 +319,7 @@ class AdminController
             'admin_nav' => true,
             'range' => $range,
             'report' => $report,
+            'use_chartjs' => true,
         ]);
     }
 
