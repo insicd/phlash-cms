@@ -64,20 +64,29 @@ $pageLabel = static function (array $row): string {
 <?php if (!$report['series']): ?>
   <p class="muted">Nessuna visita in questo periodo. Naviga il sito (non da admin) per iniziare a raccogliere dati.</p>
 <?php else: ?>
-  <p class="tiny muted">Tocca o clicca una barra per vederne i numeri.</p>
+  <?php
+    $sparkLast = count($report['series']) - 1;
+    $sparkTip0 = '';
+    if ($sparkLast >= 0) {
+      $lastRow = $report['series'][$sparkLast];
+      $sparkTip0 = $lastRow['bucket'] . ': ' . $fmt($lastRow['views']) . ' viste, ' . $fmt($lastRow['uniques']) . ' unici';
+    }
+  ?>
+  <p class="tiny muted">Tocca una barra per i dettagli di quel giorno. In evidenza: ultimo giorno del periodo.</p>
   <div class="spark" id="spark-chart" role="group" aria-label="Andamento delle pagine viste">
-    <?php foreach ($report['series'] as $row): ?>
+    <?php foreach ($report['series'] as $i => $row): ?>
       <?php
         $viewsN = (int) $row['views'];
         $hgt = $viewsN <= 0 ? 2 : max(4, (int) round(($viewsN / $maxBar) * 72));
         $tip = $row['bucket'] . ': ' . $fmt($viewsN) . ' viste, ' . $fmt($row['uniques']) . ' unici';
+        $on = ((int) $i === $sparkLast);
       ?>
-      <button type="button" class="spark-bar" data-tip="<?= h($tip) ?>" aria-label="<?= h($tip) ?>">
-        <i style="height: <?= $hgt ?>px"></i>
+      <button type="button" class="spark-bar<?= $on ? ' is-on' : '' ?>" data-tip="<?= h($tip) ?>" title="<?= h($tip) ?>" aria-label="<?= h($tip) ?>" aria-pressed="<?= $on ? 'true' : 'false' ?>">
+        <span class="spark-fill" style="height: <?= $hgt ?>px"></span>
       </button>
     <?php endforeach; ?>
   </div>
-  <p class="spark-tip" id="spark-tip" hidden></p>
+  <p class="spark-tip" id="spark-tip"><?= h($sparkTip0) ?></p>
 <?php endif; ?>
 
 <h2 class="page-h2">Pagine più viste</h2>

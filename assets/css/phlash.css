@@ -613,7 +613,7 @@ button.primary { padding: 7px 14px; font-size: 13px; }
 }
 .spark-bar:hover { background: #e8c4a0; }
 .spark-bar.is-on { background: #fdba74; }
-.spark-bar i {
+.spark-fill {
   display: block;
   width: 100%;
   background: var(--accent);
@@ -621,13 +621,14 @@ button.primary { padding: 7px 14px; font-size: 13px; }
   pointer-events: none;
   flex: none;
 }
-.spark-bar.is-on i { background: var(--accent-hot); }
+.spark-bar.is-on .spark-fill { background: var(--accent-hot); }
 .spark-tip {
-  font-size: 12px;
+  font-size: 13px;
   background: #ffedd5;
   border: 1px solid var(--line);
-  padding: 6px 8px;
+  padding: 8px 10px;
   margin: 0 0 16px;
+  min-height: 1.3em;
 }
 .grid td.num, .grid th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .stats li strong { display: block; font-size: 22px; color: var(--accent-dark); }

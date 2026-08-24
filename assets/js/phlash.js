@@ -33,6 +33,11 @@
       if (ta) {
         mdApply(ta, mdBtn.getAttribute('data-md'));
       }
+      return;
+    }
+    var sparkBar = e.target.closest('.spark-bar');
+    if (sparkBar) {
+      showSparkTip(sparkBar);
     }
   });
 
@@ -153,26 +158,38 @@
     ta.focus();
   }
 
-  var spark = document.getElementById('spark-chart');
-  var sparkTip = document.getElementById('spark-tip');
-  if (spark && sparkTip) {
-    spark.addEventListener('click', function (e) {
+  function showSparkTip(bar) {
+    var chart = document.getElementById('spark-chart');
+    var tip = document.getElementById('spark-tip');
+    if (!bar || !tip) {
+      return;
+    }
+    if (chart) {
+      var bars = chart.querySelectorAll('.spark-bar');
+      for (var i = 0; i < bars.length; i++) {
+        bars[i].classList.remove('is-on');
+        bars[i].setAttribute('aria-pressed', 'false');
+      }
+    }
+    bar.classList.add('is-on');
+    bar.setAttribute('aria-pressed', 'true');
+    tip.textContent = bar.getAttribute('data-tip') || bar.getAttribute('title') || '';
+    tip.removeAttribute('hidden');
+  }
+
+  var sparkChart = document.getElementById('spark-chart');
+  if (sparkChart) {
+    sparkChart.addEventListener('mouseover', function (e) {
       var bar = e.target.closest('.spark-bar');
-      if (!bar || !spark.contains(bar)) {
-        return;
+      if (bar) {
+        showSparkTip(bar);
       }
-      var on = bar.classList.contains('is-on');
-      spark.querySelectorAll('.spark-bar.is-on').forEach(function (el) {
-        el.classList.remove('is-on');
-      });
-      if (on) {
-        sparkTip.hidden = true;
-        sparkTip.textContent = '';
-        return;
+    });
+    sparkChart.addEventListener('focusin', function (e) {
+      var bar = e.target.closest('.spark-bar');
+      if (bar) {
+        showSparkTip(bar);
       }
-      bar.classList.add('is-on');
-      sparkTip.hidden = false;
-      sparkTip.textContent = bar.getAttribute('data-tip') || '';
     });
   }
 
