@@ -98,14 +98,28 @@ function excerpt(string $markdown, int $len = 420): string
     return rtrim(mb_substr($plain, 0, $len), " \t.,;:") . '…';
 }
 
+function phlash_timezone(): DateTimeZone
+{
+    try {
+        return new DateTimeZone(\Phlash\Database::timezoneName());
+    } catch (Throwable $e) {
+        return new DateTimeZone('Europe/Rome');
+    }
+}
+
 function italian_datetime(string $dt): string
 {
-    $ts = strtotime($dt) ?: time();
+    $tz = phlash_timezone();
+    try {
+        $when = new DateTime($dt, $tz);
+    } catch (Throwable $e) {
+        $when = new DateTime('now', $tz);
+    }
     $giorni = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
     $mesi = [1=>'gennaio',2=>'febbraio',3=>'marzo',4=>'aprile',5=>'maggio',6=>'giugno',
         7=>'luglio',8=>'agosto',9=>'settembre',10=>'ottobre',11=>'novembre',12=>'dicembre'];
-    return $giorni[(int) date('w', $ts)] . ' ' . date('j', $ts) . ' ' . $mesi[(int) date('n', $ts)]
-        . ' ' . date('Y', $ts) . ' @' . date('H:i', $ts);
+    return $giorni[(int) $when->format('w')] . ' ' . $when->format('j') . ' ' . $mesi[(int) $when->format('n')]
+        . ' ' . $when->format('Y') . ' @' . $when->format('H:i');
 }
 
 function source_host(?string $url): string

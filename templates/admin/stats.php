@@ -11,16 +11,21 @@ $fmt = static function ($n): string {
 };
 $mesi = [1=>'gen',2=>'feb',3=>'mar',4=>'apr',5=>'mag',6=>'giu',7=>'lug',8=>'ago',9=>'set',10=>'ott',11=>'nov',12=>'dic'];
 $grain = (string) ($report['series_grain'] ?? 'day');
-$labelBucket = static function (string $bucket) use ($grain, $mesi): string {
-    $ts = strtotime($bucket) ?: time();
-    $m = $mesi[(int) date('n', $ts)];
+$tz = phlash_timezone();
+$labelBucket = static function (string $bucket) use ($grain, $mesi, $tz): string {
+    try {
+        $when = new DateTime($bucket, $tz);
+    } catch (Throwable $e) {
+        $when = new DateTime('now', $tz);
+    }
+    $m = $mesi[(int) $when->format('n')];
     if ($grain === 'hour') {
-        return date('j', $ts) . ' ' . $m . ' ' . date('H:i', $ts);
+        return $when->format('j') . ' ' . $m . ' ' . $when->format('H:i');
     }
     if ($grain === 'month') {
-        return $m . ' ' . date('Y', $ts);
+        return $m . ' ' . $when->format('Y');
     }
-    return date('j', $ts) . ' ' . $m;
+    return $when->format('j') . ' ' . $m;
 };
 $pageLabel = static function (array $row): string {
     $path = (string) $row['path'];
@@ -104,7 +109,7 @@ $charts = [
   </label>
   <button type="submit">Applica periodo</button>
 </form>
-<p class="muted"><?= h($range['label']) ?></p>
+<p class="muted"><?= h($range['label']) ?> · fuso orario <?= h($timezone ?? \Phlash\Database::timezoneName()) ?></p>
 
 <ul class="stats">
   <li><strong><?= h($fmt($report['views'])) ?></strong> pagine viste</li>

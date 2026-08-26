@@ -17,8 +17,17 @@
     <input type="number" name="comment_threshold" value="<?= h($vals['comment_threshold']) ?>">
   </label>
   <label>Fuso orario
-    <input type="text" name="timezone" value="<?= h($vals['timezone']) ?>">
+    <input type="text" name="timezone" value="<?= h($vals['timezone']) ?>" list="tz-list" placeholder="Europe/Rome">
+    <span class="tiny muted">Nome IANA (es. Europe/Rome). Vale per PHP e per la sessione MySQL, così gli orari delle statistiche coincidono.</span>
   </label>
+  <datalist id="tz-list">
+    <option value="Europe/Rome">
+    <option value="Europe/Zurich">
+    <option value="Europe/Berlin">
+    <option value="Europe/London">
+    <option value="UTC">
+    <option value="America/New_York">
+  </datalist>
   <label class="chk"><input type="checkbox" name="allow_anon_comments" value="1" <?= $vals['allow_anon_comments']==='1'?'checked':'' ?>> Commenti anonimi (Codardo Anonimo)</label>
   <label class="chk"><input type="checkbox" name="registration_open" value="1" <?= $vals['registration_open']==='1'?'checked':'' ?>> Registrazioni aperte</label>
   <label>CSS personalizzato

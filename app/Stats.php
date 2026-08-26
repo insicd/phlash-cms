@@ -28,7 +28,7 @@ class Stats
         try {
             Database::insert(
                 'INSERT INTO pageviews (viewed_at, path, title, visitor) VALUES (?, ?, ?, ?)',
-                [date('Y-m-d H:i:s'), $path, $title, self::visitorId()]
+                [(new \DateTimeImmutable('now', new \DateTimeZone(Database::timezoneName())))->format('Y-m-d H:i:s'), $path, $title, self::visitorId()]
             );
         } catch (\Throwable $e) {
             return;
@@ -36,7 +36,7 @@ class Stats
         if (random_int(1, 250) === 1) {
             Database::query(
                 'DELETE FROM pageviews WHERE viewed_at < ?',
-                [date('Y-m-d H:i:s', time() - 400 * 86400)]
+                [(new \DateTimeImmutable('now', new \DateTimeZone(Database::timezoneName())))->modify('-400 days')->format('Y-m-d H:i:s')]
             );
         }
     }
@@ -113,35 +113,41 @@ class Stats
         foreach ($rows as $row) {
             $by[(string) $row['bucket']] = $row;
         }
-        $start = strtotime(substr($from, 0, 10)) ?: time();
-        $last = (strtotime($to) ?: time()) - 1;
+        $tz = new \DateTimeZone(Database::timezoneName());
+        try {
+            $fromDt = new \DateTimeImmutable($from, $tz);
+            $lastDt = (new \DateTimeImmutable($to, $tz))->modify('-1 second');
+        } catch (\Throwable $e) {
+            $fromDt = new \DateTimeImmutable('today', $tz);
+            $lastDt = new \DateTimeImmutable('now', $tz);
+        }
         $out = [];
         if ($grain === 'month') {
-            $cursor = strtotime(date('Y-m-01', $start)) ?: $start;
-            $limit = strtotime(date('Y-m-01', $last)) ?: $last;
+            $cursor = $fromDt->modify('first day of this month')->setTime(0, 0, 0);
+            $limit = $lastDt->modify('first day of this month')->setTime(0, 0, 0);
             while ($cursor <= $limit) {
-                $key = date('Y-m-01', $cursor);
+                $key = $cursor->format('Y-m-01');
                 $out[] = $by[$key] ?? ['bucket' => $key, 'views' => 0, 'uniques' => 0];
-                $cursor = strtotime('+1 month', $cursor) ?: ($cursor + 32 * 86400);
+                $cursor = $cursor->modify('+1 month');
             }
             return $out;
         }
         if ($grain === 'hour') {
-            $cursor = strtotime(date('Y-m-d H:00:00', strtotime($from) ?: $start)) ?: $start;
-            $limit = strtotime(date('Y-m-d H:00:00', $last)) ?: $last;
+            $cursor = $fromDt->setTime((int) $fromDt->format('H'), 0, 0);
+            $limit = $lastDt->setTime((int) $lastDt->format('H'), 0, 0);
             while ($cursor <= $limit) {
-                $key = date('Y-m-d H:00:00', $cursor);
+                $key = $cursor->format('Y-m-d H:00:00');
                 $out[] = $by[$key] ?? ['bucket' => $key, 'views' => 0, 'uniques' => 0];
-                $cursor += 3600;
+                $cursor = $cursor->modify('+1 hour');
             }
             return $out;
         }
-        $cursor = $start;
-        $limit = strtotime(date('Y-m-d', $last)) ?: $last;
+        $cursor = $fromDt->setTime(0, 0, 0);
+        $limit = $lastDt->setTime(0, 0, 0);
         while ($cursor <= $limit) {
-            $key = date('Y-m-d', $cursor);
+            $key = $cursor->format('Y-m-d');
             $out[] = $by[$key] ?? ['bucket' => $key, 'views' => 0, 'uniques' => 0];
-            $cursor += 86400;
+            $cursor = $cursor->modify('+1 day');
         }
         return $out;
     }

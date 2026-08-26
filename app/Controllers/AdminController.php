@@ -242,6 +242,7 @@ class AdminController
         foreach ($keys as $k) {
             $vals[$k] = Database::setting($k, '');
         }
+        $vals['timezone'] = Database::normalizeTimezone($vals['timezone'] !== '' ? $vals['timezone'] : 'Europe/Rome');
         View::render('admin/settings', [
             'title' => 'Impostazioni — Admin',
             'vals' => $vals,
@@ -261,12 +262,13 @@ class AdminController
             'allow_anon_comments' => !empty($_POST['allow_anon_comments']) ? '1' : '0',
             'registration_open' => !empty($_POST['registration_open']) ? '1' : '0',
             'comment_threshold' => (string) (int) ($_POST['comment_threshold'] ?? 1),
-            'timezone' => trim((string) ($_POST['timezone'] ?? 'Europe/Rome')),
+            'timezone' => Database::normalizeTimezone((string) ($_POST['timezone'] ?? 'Europe/Rome')),
             'custom_css' => (string) ($_POST['custom_css'] ?? ''),
         ];
         foreach ($map as $k => $v) {
             Database::setSetting($k, $v);
         }
+        Database::applyTimezone($map['timezone']);
         flash('ok', 'Impostazioni salvate.');
         redirect('admin/impostazioni');
     }
@@ -320,6 +322,7 @@ class AdminController
             'range' => $range,
             'report' => $report,
             'use_chartjs' => true,
+            'timezone' => Database::timezoneName(),
         ]);
     }
 

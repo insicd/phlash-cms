@@ -43,7 +43,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 if ($installed) {
     $tz = Database::setting('timezone', 'Europe/Rome');
-    @date_default_timezone_set($tz);
+    Database::applyTimezone($tz);
     try {
         Database::pdo()->query('SELECT icon FROM topics LIMIT 1');
     } catch (Throwable $e) {
